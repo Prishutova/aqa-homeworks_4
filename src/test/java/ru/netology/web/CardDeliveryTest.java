@@ -22,7 +22,7 @@ class CardDeliveryTest {
     @Test
     void shouldSubmitTheFormDirectInputOfValues() {
         Selenide.open("http://localhost:9999");
-        String planningDate = generateDate(3, "dd/MM/yyyy");
+        String planningDate = generateDate(3, "dd.MM.yyyy");
 
         $("[data-test-id='city'] input").setValue("Казань");
         $("[data-test-id='date'] input")
@@ -31,8 +31,9 @@ class CardDeliveryTest {
         $("[data-test-id='phone'] input").setValue("+79600000000");
         $("[data-test-id='agreement']").click();
         $(".button").find(withText("Забронировать")).click();
-        $(withText("Встреча успешно забронирована"))
-                .should(visible, ofSeconds(15));
+        $("[data-test-id='notification']")
+                .shouldBe(visible, ofSeconds(15))
+                .shouldHave(text("Встреча успешно забронирована на " + planningDate));
     }
 
     @Test
@@ -46,20 +47,27 @@ class CardDeliveryTest {
 
         $("[data-test-id='date'] .icon-button").click();
         $(".calendar").shouldBe(visible, Duration.ofSeconds(2));
-        while ($$("td.calendar__day").filter(visible)
-                .filter(exactText(dayToClick)).size() == 0) {
-            $(".calendar__arrow_direction_right[data-step='1']").click();
-        }
-        $$("td.calendar__day")
-                .filter(visible)
-                .find(exactText(dayToClick))
-                .click();
 
-        $("[data-test-id='name'] input").setValue("Иван Петров");
-        $("[data-test-id='phone'] input").setValue("+79600000000");
-        $("[data-test-id='agreement']").click();
-        $(".button").find(withText("Забронировать")).click();
-        $(withText("Встреча успешно забронирована"))
-                .should(visible, ofSeconds(15));
+        int maxClicks = 12;
+        for (int i = 0; i < maxClicks; i++) {
+            if ($$("td.calendar__day").filter(visible)
+                    .filter(exactText(dayToClick)).size() > 0) {
+                break;
+            }
+            $(".calendar__arrow_direction_right[data-step='1']").click();
+
+            $$("td.calendar__day")
+                    .filter(visible)
+                    .find(exactText(dayToClick))
+                    .click();
+
+            $("[data-test-id='name'] input").setValue("Иван Петров");
+            $("[data-test-id='phone'] input").setValue("+79600000000");
+            $("[data-test-id='agreement']").click();
+            $(".button").find(withText("Забронировать")).click();
+            $("[data-test-id='notification']")
+                    .shouldBe(visible, ofSeconds(15))
+                    .shouldHave(text("Встреча успешно забронирована на " + dayToClick));
+        }
     }
 }
