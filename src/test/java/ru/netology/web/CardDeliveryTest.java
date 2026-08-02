@@ -7,6 +7,7 @@ import org.openqa.selenium.Keys;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.withText;
@@ -42,7 +43,9 @@ class CardDeliveryTest {
         LocalDate futureDate = LocalDate.now().plusDays(7);
         String dayToClick = futureDate.format(DateTimeFormatter.ofPattern("d"));
         String expectedDate = futureDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        String expectedMonth = futureDate.format(DateTimeFormatter.ofPattern("MMM")).replace(".", "");
+        String expectedMonth = futureDate.format(
+                DateTimeFormatter.ofPattern("MMM", new Locale("ru"))
+        ).replace(".", "");
         String expectedYear = futureDate.format(DateTimeFormatter.ofPattern("yyyy"));
 
         $("[data-test-id='city'] input").setValue("Ка");
